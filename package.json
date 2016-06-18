@@ -1,0 +1,29 @@
+{
+  "name": "dbfeazy",
+  "version": "1.0.0",
+  "description": "A small and light object oriented database",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "coffee src/test.coffee --nodejs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kursion/dbfeazy.git"
+  },
+  "keywords": [
+    "dbfeazy",
+    "database",
+    "json",
+    "object",
+    "simple",
+    "light",
+    "easy",
+    "small"
+  ],
+  "author": "Yves Lange",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kursion/dbfeazy/issues"
+  },
+  "homepage": "https://github.com/kursion/dbfeazy#readme"
+}
