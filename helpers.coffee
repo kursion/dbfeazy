@@ -23,14 +23,58 @@ module.exports =
   #
   # In this example, the returned cursor will be obj['kursion']['pets']['cat']
   #
-  set_value_to_obj: (obj, key, value) ->
+  set_value_to_obj: (obj, multikey, value) ->
     cursor = obj
-    keys = key.split('.')
+    keys = multikey.split('.')
     for k, i in keys
       if not cursor[k]? then cursor[k] = {}
       if i == keys.length-1 and value? then cursor[k] = value
       cursor = cursor[k]
     return cursor
+
+  delete_value_to_obj: (obj, multikey) ->
+    cursor = obj
+    keys = multikey.split('.')
+    for k, i in keys
+      break if keys.length-1 == i
+      cursor = cursor[k]
+    delete cursor[keys[keys.length-1]] if cursor?
+
+  get_value_from_obj: (obj, multikey) ->
+    cursor = obj
+    keys = multikey.split('.')
+    cursor = cursor[k] for k in keys
+    return cursor
+
+  exists_value_from_obj: (obj, multikey) ->
+    cursor = obj
+    keys = multikey.split('.')
+    for k in keys
+      cursor = cursor[k]
+      return false if not cursor?
+    return true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

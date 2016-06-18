@@ -1,9 +1,7 @@
-exp = module.exports
-
 fs = require('fs')
 helpers = require('./helpers')
 
-class DBFeazy
+module.exports = class DBFeazy
   _DB:           {}
 
   ##
@@ -42,7 +40,7 @@ class DBFeazy
   ## CONSTRUCTOR
   #
   constructor: (table, directory=".") ->
-    console.log "DBFeazy> constructor", directory, table
+    # console.log "DBFeazy> constructor", directory, table
     path = "#{directory}/#{table}"
     @_fileOP = "#{path}.op"
     @_file = "#{path}.dbf"
@@ -52,19 +50,18 @@ class DBFeazy
   db_write: (key, value) ->
     helpers.set_value_to_obj(@_DB, key, value)
 
-  db_del: (key) ->
-    # console.log "TODO db del"
+  db_delete: (key) ->
+    helpers.delete_value_to_obj(@_DB, key)
 
-  db_update: (key, value) ->
-    # console.log "TODO db update"
-
+  # db_update: (key, value) ->
+  #   console.log "TODO db update"
 
   ##
   # The dispatcher will read the operation and
   # execute the correct function according to that.
   db_dispatcher: (op, key, value) ->
     if @_is_op_add(op) then @db_write(key, value)
-    else if @_is_op_del(op) then @db_del(key)
+    else if @_is_op_del(op) then @db_delete(key)
     else if @_is_op_update(op) then @db_update(key)
     else throw Error("DB_DISPATCHER> can't recognize operation: '#{op}'")
 
@@ -76,12 +73,6 @@ class DBFeazy
   _is_op_update: (op) -> op == @_symbols.update
 
 
-  ## OPLINE WRITE
-  #
-  log_opline: (opline) ->
-    fs.appendFile(@_fileOP, opline, (err) ->
-      if err? then console.log err
-    )
 
   ## OPLINE BUILD
   #
@@ -97,17 +88,16 @@ class DBFeazy
   build_opline_update: (key, value) ->
     @build_opline(@_symbols.update, key, value)
 
-  ## OPLINE READ
+  ## OPLINE OPERATIONS
   # Restore operations from the op log file
   #
 
-  # TODO: not used ?
-  # parse_opline2obj: (obj, key, value) ->
-  #   # TODO: not finished
-  #   for subkey in key.split(".")
-  #     if not obj[subkey]? then obj[subkey] = {}
-  #     obj = obj[subkey]
-  #   obj = value
+  ##
+  # Asynchronously writes an operation line into the
+  # operations file
+  #
+  log_opline: (opline, callback) ->
+    fs.appendFile(@_fileOP, opline, @_fileEncoding)
 
   ##
   # Split an opline to the following format: [op, key, value]
@@ -123,29 +113,78 @@ class DBFeazy
     value = if value? then JSON.parse(value) else null
     return [op, key, value]
 
-  restore_data: (data) ->
-    for opline in data.split('\n') when opline != ''
+  ##
+  # Restores the oplines in the database object.
+  #
+  restore_oplines: ->
+    oplines = fs.readFileSync(@_fileOP, @_fileEncoding)
+    for opline in oplines.split('\n') when opline != ''
       [op, key, value] = @parse_opline(opline)
-      console.log "RESTORE_DATA>", op, key, value
+      console.log "RESTORE_OPLINES>", op, key, value
       @db_dispatcher(op, key, value)
+
+  ##
+  # Clean the op file.
+  # TODO: find a better way to clean the op file
+  #
+  clean_oplines: ->
+    fs.writeFileSync(@_fileOP, "", @_fileEncoding)
+
+  ##
+  # DATABASE OPERATIONS
+  #
+
+  # Restores the database object.
+  db_restore: ->
+    dbf_data = fs.readFileSync(@_file, @_fileEncoding)
+    db = JSON.parse(dbf_data)
+    console.log "DB_RESTORE>", db
+    @_DB = db
+
+  # Save the database object.
+  db_save: ->
+    dbf_data = JSON.stringify(@_DB)
+    fs.writeFileSync(@_file, dbf_data, @_fileEncoding)
+
+  db_key_exists: (key) ->
+    helpers.exists_value_from_obj(@_DB, key)
+
+  db_get: (key) ->
+    helpers.get_value_from_obj(@_DB, key)
 
 
   ## PUBLIC OPERATIONS
   #
 
   ##
-  # Restores the DB by reading and re-operating
-  # the oplines.
-  # TODO: is this public ???
+  # Cleans the DB and the oplines
+  # WARN: this will reset the database. Use it with
+  #       caution.
+  CleanAll: (bool) ->
+    if bool
+      @_DB = {}
+      @db_save()
+      @clean_oplines()
+    else
+      throw Error("You tried to CleanAll, to confirm pass 'true'")
+
+  ##
+  # Restores the DB by reading and re-operating the oplines.
+  # TODO: is this public ??? It should probably be automatic
   # TODO: Restore is a sync operation. Do you like that :( ?
+  # TODO: check if the file exists
   #
   Restore: ->
-    data = fs.readFileSync(@_fileOP, @_fileEncoding)
-    @restore_data(data)
-    # fs.readFile(@_fileOP, @_fileEncoding, (err, data) =>
-    #   if err? then console.error err
-    #   else @restore_data(data)
-    # )
+    @db_restore()
+    @restore_oplines()
+
+  ##
+  # Save the current DB object to a file
+  # This is using JSON stringify.
+  #
+  Save: ->
+    @db_save()
+    @clean_oplines()
 
   ##
   # adds a key and value
@@ -159,31 +198,28 @@ class DBFeazy
   Del: (key) ->
     @log_opline(
       @build_opline_del(key))
+    @db_delete(key)
+
+  ##
+  # returns true if the multikey exists or
+  # false if not
+  #
+  Exists: (key) ->
+    @db_key_exists(key)
 
   ##
   # updates a key and value
-  Update: (key, value) ->
-    @log_opline(
-      @build_opline_update(key, value))
+  # Update: (key, value) ->
+  #   @log_opline(
+  #     @build_opline_update(key, value))
+
+  ##
+  # Get the value of a key from the DB
+  #
+  Get: (key) ->
+    @db_get(key)
 
   ##
   # show the current database.
   Show: ->
     console.log "DB>", @_DB
-
-## TODOLIST
-# [ ] add timestamp to opline ?
-# [ ] writing operation should be in a queue ?
-# [ ] restore should be done by default and not
-#     being a public operation that can use the dev.
-# [ ] update? then we need to implements some checks so that
-#     this operation should check that the key exists !
-#
-console.log "-------------------------------------"
-db = new DBFeazy("user")
-db.Restore()
-db.Show()
-# db.Add("kursion", {test: "1"})
-# db.Del("kursion")
-# db.Update("kursion", {a: "2"})
-# db.Add("kursion.test", "multikey")

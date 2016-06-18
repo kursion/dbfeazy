@@ -34,3 +34,6 @@ node_modules
 
 # OP logs
 *.op
+
+# DBF database file
+*.dbf
