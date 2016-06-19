@@ -1,17 +1,113 @@
 # DBFeazy
 
 DBFeazy allows you to have a single, simple and small DB.
-In many of my own projects, I wanted to quickly stores JavaScript
-things (objects, values, strings) and restores them.
 
-I didn't want to install something that would need a lot of dependencies, or a socket,
-or a specific syntax. So I did my own DB.
+*NOTE: this project was developped using NodeJS and CoffeeScript.*
+
+# Install and simple example
+
+Installation: `npm install dbfeazy`
+
+Here is a small example of how to open, restore, add,
+get and save the new database state.
+
+```coffeescript
+# index.coffee - example of project with DBFeazy
+
+DBFeazy = require('dbfeazy')
+
+db = new DBFeazy("users") # Opens user.dbf and user.op files
+db.Restore()              # Restores previous state
+
+# Adding some values
+db.Add("kursion.age", 27)
+db.Add("kursion.lang", 'en')
+
+# Adding an object
+olivierInfo = {age: 45, lang: 'fr')
+db.Add("olivier", olivierInfo)
+
+# Deleting something
+db.Add("kursion.sex", "small")
+db.Del("kursion.sex")
+
+# Updating a value
+db.Add("kursion.age", 18)
+
+# Getting a value
+db.Get("olivier")     # {age: 45, lang: 'fr'}
+db.Get("kursion.sex") # undefined (since we deleted it)
+db.Get("kursion.age") # 27
+
+# Save the DB
+# NOTE: until now every operations are stored to the
+# the operations file (check futher for more information).
+#
+# Since we finished to work on this database we can
+# store the current state of the database and clean
+# the operation file.
+db.Save()
+
+# Now the operations file (users.op) should be cleaned and
+# the database object should be stored into the database
+# file (users.dbf) as a stringified JSON.
+
+
+
+```
 
 # What is it ?
-DBFeazy is divided into two: the *database object* and the *operation file*.
+DBFeazy uses two distinguish files that are using different
+mechanisms:
+
+- the **database object**
+- the **operations file**
+
 This section will present both of them.
 
-## [TODO] The database object
+## The database object
+The *database object* is a simple JavaScript object, a
+hashmap. This object is stored into the *DBF* which stands for
+"database file" (eg: `./users.dbf`). Its content is a
+stringified JSON object.
+
+## The operations files
+[TODO]
+
+The state of the database can be manipulate through two
+operations:
+
+- Restore()
+- Save()
+
+The database object can be manipulate with tree other
+operations:
+
+- Add(key, value)
+- Del(key)
+- Get(key)
+
+### Keys and values
+
+The key is a string, eg:
+
+```coffeescript
+db.Get('kursion')
+```
+
+And it handles multiple string keys separated by a dot, eg:
+
+```coffeescript
+db.Get('kursion.age')
+```
+
+It can store all JavaScript types as value:
+
+- strings
+- arrays
+- numbers
+- objects
+
 
 ## [TODO] The operations' file
 It is **simple**. The DB is a JavaScript object called `_DB`. This object
