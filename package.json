@@ -1,6 +1,6 @@
 {
   "name": "dbfeazy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A small and light object oriented database",
   "main": "build/index.js",
   "scripts": {
