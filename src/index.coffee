@@ -26,8 +26,9 @@ module.exports = class DBFeazy
   # File that stores operations that can be used to restore the final
   # state of the database be replaying the operations.
   #
-  _fileOP:       null
-  _fileEncoding: 'utf8'
+  _fileOP:           null
+  _fileDescriptorOP: null
+  _fileEncoding:     'utf8'
 
   ##
   # Symbols that are used for the operations and as delimiters.
@@ -44,6 +45,8 @@ module.exports = class DBFeazy
     path = "#{directory}/#{table}"
     @_fileOP = "#{path}.dbo"
     @op_create_file()
+    @_fileDescriptorOP = fs.openSync(@_fileOP, 'a')
+
     @_file = "#{path}.dbf"
     @db_create_file()
 
@@ -99,8 +102,8 @@ module.exports = class DBFeazy
   # Asynchronously writes an operation line into the
   # operations file
   #
-  opline_log: (opline, callback) ->
-    fs.appendFile(@_fileOP, opline, @_fileEncoding)
+  opline_log: (opline) ->
+    fs.writeFile(@_fileDescriptorOP, opline, @_fileEncoding)
 
   ##
   # Split an opline to the following format: [op, key, value]
