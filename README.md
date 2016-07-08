@@ -231,6 +231,6 @@ obj = {
 
 # Performances
 `tests/test-massive.coffee`: this test is looping every *1ms* to `db.Add()` something in the DB. Each *10sec* the DB is saved.
-Here are the result for 10mio of *add* operation:
+Here are the results for 10mio of *add* operations:
 
 ![performances](https://raw.githubusercontent.com/kursion/dbfeazy/master/dbfeazy-perf.png)
