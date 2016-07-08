@@ -1,3 +1,4 @@
+fs = require('fs')
 DBFeazy = require('./index.coffee')
 helpers = require('./helpers')
 
@@ -12,8 +13,44 @@ tests = []
 #     this operation should check that the key exists !
 #
 
-db = new DBFeazy("user")
-db.CleanAll(true)
+# The shared DBFeazy object for the tests
+db = null
+
+
+removeFiles = ->
+  try fs.unlinkSync("user.dbo")
+  try fs.unlinkSync("user.dbf")
+
+# Removes files (user.dbo, user.dbf) to be in a clean
+# state.
+removeFiles()
+
+tests.push
+  run: ->
+    console.log "===> Test: opening DB"
+    db = new DBFeazy("user")
+  check: ->
+    throw Error "Couldn't construct the DBFeazy 'user'" if not db?
+
+tests.push
+  run: ->
+    console.log "===> Test: restoring freshly created DB"
+  check: ->
+    try
+      db.Restore()
+    catch err
+      console.log err
+      throw Error "DB files don't exist. The should be created automatically
+    when initialized by the constructor 'db = new DBFeazy(...)"
+
+tests.push
+  run: ->
+    console.log "===> Test: cleanAll DB"
+    db.Add("cleanAll", true)
+    db.CleanAll(true)
+  check: ->
+    exists = db.Exists("cleanAll")
+    throw Error "CleanAll() didn't worked as intended" if exists
 
 tests.push
   run: ->
@@ -66,6 +103,10 @@ tests.push
 
 
 # Runs the test suite
-for test in tests
+for test, i in tests
+  console.log "TEST: #{i+1}/#{tests.length}"
   test.run()
   test.check()
+
+console.log "### ALL TESTS PASSED ###"
+removeFiles()

@@ -1,4 +1,16 @@
+fs = require('fs')
+
 module.exports =
+
+  ##
+  # Creates a file if it does not already exist.
+  createFileIfNotExists: (path, fileEncoding, data="") ->
+    options = {
+      flag: 'wx' # w=write, x=don't overwrite
+      encoding: fileEncoding
+    }
+    try
+      fs.writeFileSync(path, data, options)
 
   ##
   # Gets the nth-indexOf of a symbol 'char' in a given string

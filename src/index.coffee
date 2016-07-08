@@ -42,19 +42,22 @@ module.exports = class DBFeazy
   constructor: (table, directory=".") ->
     # console.log "DBFeazy> constructor", directory, table
     path = "#{directory}/#{table}"
-    @_fileOP = "#{path}.op"
+    @_fileOP = "#{path}.dbo"
+    @op_create_file()
     @_file = "#{path}.dbf"
+    @db_create_file()
 
   ## DB OPERATIONS
   #
+
+  db_create_file: ->
+    helpers.createFileIfNotExists(@_file, @_fileEncoding, "{}")
+
   db_write: (key, value) ->
     helpers.set_value_to_obj(@_DB, key, value)
 
   db_delete: (key) ->
     helpers.delete_value_to_obj(@_DB, key)
-
-  # db_update: (key, value) ->
-  #   console.log "TODO db update"
 
   ##
   # The dispatcher will read the operation and
@@ -66,43 +69,43 @@ module.exports = class DBFeazy
     else throw Error("DB_DISPATCHER> can't recognize operation: '#{op}'")
 
 
-  ## OTHER
-  #
-  _is_op_add: (op) -> op == @_symbols.add
-  _is_op_del: (op) -> op == @_symbols.del
-  _is_op_update: (op) -> op == @_symbols.update
-
-
 
   ## OPLINE BUILD
   #
-  build_opline: (mode, key, value) ->
+  opline_build: (mode, key, value) ->
     "#{mode}#{@_symbols.opline_sep}#{key}#{if value? then "#{@_symbols.opline_sep}#{JSON.stringify(value)}" else ""}\n"
 
-  build_opline_add: (key, value) ->
-    @build_opline(@_symbols.add, key, value)
+  opline_build_add: (key, value) ->
+    @opline_build(@_symbols.add, key, value)
 
-  build_opline_del: (key, value) ->
-    @build_opline(@_symbols.del, key, value)
+  opline_build_del: (key, value) ->
+    @opline_build(@_symbols.del, key, value)
 
-  build_opline_update: (key, value) ->
-    @build_opline(@_symbols.update, key, value)
+  opline_build_update: (key, value) ->
+    @opline_build(@_symbols.update, key, value)
 
   ## OPLINE OPERATIONS
   # Restore operations from the op log file
   #
 
+  _is_op_add: (op) -> op == @_symbols.add
+  _is_op_del: (op) -> op == @_symbols.del
+  _is_op_update: (op) -> op == @_symbols.update
+
+  op_create_file: ->
+    helpers.createFileIfNotExists(@_fileOP, @_fileEncoding)
+
   ##
   # Asynchronously writes an operation line into the
   # operations file
   #
-  log_opline: (opline, callback) ->
+  opline_log: (opline, callback) ->
     fs.appendFile(@_fileOP, opline, @_fileEncoding)
 
   ##
   # Split an opline to the following format: [op, key, value]
   #
-  parse_opline: (opline) ->
+  opline_parse: (opline) ->
     indexOfValue = helpers.nthIndexOf(opline, @_symbols.opline_sep, 2)
     if indexOfValue == -1
       throw Error("indexOfValue is -1, delimiter not found")
@@ -116,29 +119,31 @@ module.exports = class DBFeazy
   ##
   # Restores the oplines in the database object.
   #
-  restore_oplines: ->
+  opline_restore_all: ->
     oplines = fs.readFileSync(@_fileOP, @_fileEncoding)
     for opline in oplines.split('\n') when opline != ''
-      [op, key, value] = @parse_opline(opline)
-      console.log "RESTORE_OPLINES>", op, key, value
+      [op, key, value] = @opline_parse(opline)
+      console.log "OPLINE_RESTORE_ALL>", op, key, value
       @db_dispatcher(op, key, value)
 
   ##
   # Clean the op file.
   # TODO: find a better way to clean the op file
   #
-  clean_oplines: ->
+  opline_clean_all: ->
     fs.writeFileSync(@_fileOP, "", @_fileEncoding)
+
+
 
   ##
   # DATABASE OPERATIONS
   #
 
   # Restores the database object.
+  # This function will create the
   db_restore: ->
     dbf_data = fs.readFileSync(@_file, @_fileEncoding)
     db = JSON.parse(dbf_data)
-    console.log "DB_RESTORE>", db
     @_DB = db
 
   # Save the database object.
@@ -164,19 +169,17 @@ module.exports = class DBFeazy
     if bool
       @_DB = {}
       @db_save()
-      @clean_oplines()
+      @opline_clean_all()
     else
       throw Error("You tried to CleanAll, to confirm pass 'true'")
 
   ##
   # Restores the DB by reading and re-operating the oplines.
   # TODO: is this public ??? It should probably be automatic
-  # TODO: Restore is a sync operation. Do you like that :( ?
-  # TODO: check if the file exists
   #
   Restore: ->
     @db_restore()
-    @restore_oplines()
+    @opline_restore_all()
 
   ##
   # Save the current DB object to a file
@@ -184,20 +187,20 @@ module.exports = class DBFeazy
   #
   Save: ->
     @db_save()
-    @clean_oplines()
+    @opline_clean_all()
 
   ##
   # adds a key and value
   Add: (key, value) ->
-    @log_opline(
-      @build_opline_add(key, value))
+    @opline_log(
+      @opline_build_add(key, value))
     @db_write(key, value)
 
   ##
   # deletes a key
   Del: (key) ->
-    @log_opline(
-      @build_opline_del(key))
+    @opline_log(
+      @opline_build_del(key))
     @db_delete(key)
 
   ##
@@ -210,8 +213,8 @@ module.exports = class DBFeazy
   ##
   # updates a key and value
   # Update: (key, value) ->
-  #   @log_opline(
-  #     @build_opline_update(key, value))
+  #   @opline_log(
+  #     @opline_build_update(key, value))
 
   ##
   # Get the value of a key from the DB
