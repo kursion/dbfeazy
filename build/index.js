@@ -32,9 +32,15 @@
         directory = ".";
       }
       path = directory + "/" + table;
-      this._fileOP = path + ".op";
+      this._fileOP = path + ".dbo";
+      this.op_create_file();
       this._file = path + ".dbf";
+      this.db_create_file();
     }
+
+    DBFeazy.prototype.db_create_file = function() {
+      return helpers.createFileIfNotExists(this._file, this._fileEncoding, "{}");
+    };
 
     DBFeazy.prototype.db_write = function(key, value) {
       return helpers.set_value_to_obj(this._DB, key, value);
@@ -56,6 +62,22 @@
       }
     };
 
+    DBFeazy.prototype.opline_build = function(mode, key, value) {
+      return "" + mode + this._symbols.opline_sep + key + (value != null ? "" + this._symbols.opline_sep + (JSON.stringify(value)) : "") + "\n";
+    };
+
+    DBFeazy.prototype.opline_build_add = function(key, value) {
+      return this.opline_build(this._symbols.add, key, value);
+    };
+
+    DBFeazy.prototype.opline_build_del = function(key, value) {
+      return this.opline_build(this._symbols.del, key, value);
+    };
+
+    DBFeazy.prototype.opline_build_update = function(key, value) {
+      return this.opline_build(this._symbols.update, key, value);
+    };
+
     DBFeazy.prototype._is_op_add = function(op) {
       return op === this._symbols.add;
     };
@@ -68,27 +90,15 @@
       return op === this._symbols.update;
     };
 
-    DBFeazy.prototype.build_opline = function(mode, key, value) {
-      return "" + mode + this._symbols.opline_sep + key + (value != null ? "" + this._symbols.opline_sep + (JSON.stringify(value)) : "") + "\n";
+    DBFeazy.prototype.op_create_file = function() {
+      return helpers.createFileIfNotExists(this._fileOP, this._fileEncoding);
     };
 
-    DBFeazy.prototype.build_opline_add = function(key, value) {
-      return this.build_opline(this._symbols.add, key, value);
-    };
-
-    DBFeazy.prototype.build_opline_del = function(key, value) {
-      return this.build_opline(this._symbols.del, key, value);
-    };
-
-    DBFeazy.prototype.build_opline_update = function(key, value) {
-      return this.build_opline(this._symbols.update, key, value);
-    };
-
-    DBFeazy.prototype.log_opline = function(opline, callback) {
+    DBFeazy.prototype.opline_log = function(opline, callback) {
       return fs.appendFile(this._fileOP, opline, this._fileEncoding);
     };
 
-    DBFeazy.prototype.parse_opline = function(opline) {
+    DBFeazy.prototype.opline_parse = function(opline) {
       var indexOfValue, key, op, ref, ref1, value;
       indexOfValue = helpers.nthIndexOf(opline, this._symbols.opline_sep, 2);
       if (indexOfValue === -1) {
@@ -102,7 +112,7 @@
       return [op, key, value];
     };
 
-    DBFeazy.prototype.restore_oplines = function() {
+    DBFeazy.prototype.opline_restore_all = function() {
       var i, key, len, op, opline, oplines, ref, ref1, results, value;
       oplines = fs.readFileSync(this._fileOP, this._fileEncoding);
       ref = oplines.split('\n');
@@ -112,14 +122,14 @@
         if (!(opline !== '')) {
           continue;
         }
-        ref1 = this.parse_opline(opline), op = ref1[0], key = ref1[1], value = ref1[2];
-        console.log("RESTORE_OPLINES>", op, key, value);
+        ref1 = this.opline_parse(opline), op = ref1[0], key = ref1[1], value = ref1[2];
+        console.log("OPLINE_RESTORE_ALL>", op, key, value);
         results.push(this.db_dispatcher(op, key, value));
       }
       return results;
     };
 
-    DBFeazy.prototype.clean_oplines = function() {
+    DBFeazy.prototype.opline_clean_all = function() {
       return fs.writeFileSync(this._fileOP, "", this._fileEncoding);
     };
 
@@ -127,7 +137,6 @@
       var db, dbf_data;
       dbf_data = fs.readFileSync(this._file, this._fileEncoding);
       db = JSON.parse(dbf_data);
-      console.log("DB_RESTORE>", db);
       return this._DB = db;
     };
 
@@ -149,7 +158,7 @@
       if (bool) {
         this._DB = {};
         this.db_save();
-        return this.clean_oplines();
+        return this.opline_clean_all();
       } else {
         throw Error("You tried to CleanAll, to confirm pass 'true'");
       }
@@ -157,21 +166,21 @@
 
     DBFeazy.prototype.Restore = function() {
       this.db_restore();
-      return this.restore_oplines();
+      return this.opline_restore_all();
     };
 
     DBFeazy.prototype.Save = function() {
       this.db_save();
-      return this.clean_oplines();
+      return this.opline_clean_all();
     };
 
     DBFeazy.prototype.Add = function(key, value) {
-      this.log_opline(this.build_opline_add(key, value));
+      this.opline_log(this.opline_build_add(key, value));
       return this.db_write(key, value);
     };
 
     DBFeazy.prototype.Del = function(key) {
-      this.log_opline(this.build_opline_del(key));
+      this.opline_log(this.opline_build_del(key));
       return this.db_delete(key);
     };
 
