@@ -17,6 +17,8 @@
 
     DBFeazy.prototype._fileOP = null;
 
+    DBFeazy.prototype._fileDescriptorOP = null;
+
     DBFeazy.prototype._fileEncoding = 'utf8';
 
     DBFeazy.prototype._symbols = {
@@ -34,6 +36,7 @@
       path = directory + "/" + table;
       this._fileOP = path + ".dbo";
       this.op_create_file();
+      this._fileDescriptorOP = fs.openSync(this._fileOP, 'a');
       this._file = path + ".dbf";
       this.db_create_file();
     }
@@ -94,8 +97,8 @@
       return helpers.createFileIfNotExists(this._fileOP, this._fileEncoding);
     };
 
-    DBFeazy.prototype.opline_log = function(opline, callback) {
-      return fs.appendFile(this._fileOP, opline, this._fileEncoding);
+    DBFeazy.prototype.opline_log = function(opline) {
+      return fs.writeFile(this._fileDescriptorOP, opline, this._fileEncoding);
     };
 
     DBFeazy.prototype.opline_parse = function(opline) {
