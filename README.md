@@ -228,9 +228,9 @@ obj = {
 
 - `op`: is an operation (that can be `+ add`, `- delete`)
 
-QUESTION: do we need db.add ? db.update is sufficient !
 
+# Performances
+`tests/test-massive.coffee`: this test is looping every *1ms* to `db.Add()` something in the DB. Each *10sec* the DB is saved.
+Here are the result for 10mio of *add* operation:
 
-
-key: "eg: users.kursion"
-creates automatically if doesn't exists
+![performances](https://raw.githubusercontent.com/kursion/dbfeazy/master/dbfeazy-perf.png)
