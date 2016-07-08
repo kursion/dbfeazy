@@ -4,6 +4,9 @@ DBFeazy allows you to have a single, simple and small DB.
 
 *NOTE: this project was developped using NodeJS and CoffeeScript.*
 
+# TODO
+- [ ] Async version with promise
+
 # Install and simple example
 
 Installation: `npm install dbfeazy`
@@ -58,8 +61,8 @@ db.Save()
 DBFeazy uses two distinguish files that are using different
 mechanisms:
 
-- the **operations file**
-- the **database object**
+- the **operations** file or **oplog** file (extension `.dbo`)
+- the **database object** file (extension `.dbf`
 
 This section will present both of them.
 
@@ -67,6 +70,7 @@ This section will present both of them.
 
 Operations are stored into an *oplog* (operations log) or
 *operations file* (both terms are the same).
+An operation of the *oplog* file is called an *opline*.
 Here is a sample of an operations file after the following
 few operations:
 
@@ -139,18 +143,14 @@ dependencies.  The performance will, for sure, not be great. This DB is not for
 production. It was created for fast prototyping.
 
 
-# First implementation
-
-* One data.DB file is one DB?
-* OP-Log (add, delete, update)
-* A single object by DB ?
-* How to compress JSON format efficiently
-* What about IDs ?
-* Using promises
-
 ------------------------------------
 
 # Operations
+
+## Example using operations
+
+The constructor `new DBFeazy(...)` will automatically create
+the `.dbf` and `.dbo` files if the don't exist.
 
 ```coffeescript
 DBFeazy = require("dbfeazy")
@@ -160,38 +160,54 @@ db.Restore()
 db.Save()
 ```
 
-## Add
+## Restore
+
+Restore the DB (from the `.dbf` and `.dbo` files).
 
 ```coffeescript
-db.add(key, value, callback)
-db.add(key, value, booleanCallback, callback)
+db.Restore()
+```
+
+## Save
+
+Saves the current state of the database.
+This will write the database object into the `.dbf` file and will
+clean the operation log file (`.dbo`).
+
+```coffeescript
+db.Save()
+```
+
+## Add
+
+Adds or updates a key-value pair to the database object
+
+```coffeescript
+db.Add(key, value)
 ```
 
 ## Delete
 
-```coffeescript
-db.del(key, callback)
-db.del(key, booleanCallback, callback)
-```
-
-# Update
+Delete a key from the database object
 
 ```coffeescript
-db.update(key, value, callback)
-db.updateIf(key, value, booleanCallback)
+db.Del(key)
 ```
 
 # Get
 
+Get a key
+
 ```coffeescript
-db.get(key, callback)
-db.get(key, filter, callback)
+db.Get(key)
 ```
 
 # Exists
 
+Returns `true` if the key exists, or `false` if it doesn't exist.
+
 ```coffeescript
-* db.exists(key, callback) <= SHOULD RETURN TRUE/FALSE
+db.Exists(key)
 ```
 
 ------------------------------------
