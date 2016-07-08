@@ -1,5 +1,7 @@
 # DBFeazy
 
+*-- What if a database was as cheap as a variable? --*
+
 DBFeazy allows you to have a single, simple and small DB.
 
 *NOTE: this project was developped using NodeJS and CoffeeScript.*
