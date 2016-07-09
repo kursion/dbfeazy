@@ -44,7 +44,7 @@ if db.Exists("kursion.age")
 db.Get("olivier")     # {age: 45, lang: 'fr'}
 db.Get("kursion.sex") # undefined (since we deleted it)
 db.Get("kursion.age") # 27
-db.Get(“olivier.age") # 45
+db.Get("olivier.age") # 45
 
 # Save the DB
 # NOTE: until now every operations are stored in the
