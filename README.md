@@ -29,10 +29,10 @@ db.Add("kursion.age", 27)
 db.Add("kursion.lang", 'en')
 
 # Adding an object
-olivierInfo = {age: 45, lang: 'fr')
+olivierInfo = {age: 45, lang: 'fr'}
 db.Add("olivier", olivierInfo)
 
-# Deleting something
+# Deleting something 
 db.Add("kursion.sex", "small")
 db.Del("kursion.sex")
 
@@ -44,10 +44,12 @@ if db.Exists("kursion.age")
 db.Get("olivier")     # {age: 45, lang: 'fr'}
 db.Get("kursion.sex") # undefined (since we deleted it)
 db.Get("kursion.age") # 27
+db.Get(“olivier.age") # 45
 
 # Save the DB
-# NOTE: until now every operations are stored to the
-# the operations file (check futher for more information).
+# NOTE: until now every operations are stored in the
+# the operations file (check futher for more information) 
+# and the memory.
 #
 # Since we finished to work on this database we can
 # store the current state of the database and clean
