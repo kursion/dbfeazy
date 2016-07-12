@@ -1,4 +1,5 @@
 # DBFeazy
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/kursion/dbfeazy/master/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/kursion/dbfeazy.svg?style=flat-square)](https://github.com/kursion/dbfeazy/issues) [![GitHub issues](https://img.shields.io/badge/npm--download-254-lightgrey.svg)](https://www.npmjs.com/package/dbfeazy)
 
 *-- What if a database was as cheap as a variable? --*
 
@@ -238,3 +239,5 @@ obj = {
 Here are the results for 10mio of *add* operations:
 
 ![performances](https://raw.githubusercontent.com/kursion/dbfeazy/master/dbfeazy-perf.png)
+
+(i7, 16 GB, Surface Pro 4, Windows 10 / also tested on Archlinux)
