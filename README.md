@@ -1,7 +1,7 @@
 # DBFeazy
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/kursion/dbfeazy/master/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/kursion/dbfeazy.svg?style=flat-square)](https://github.com/kursion/dbfeazy/issues) [![GitHub issues](https://img.shields.io/badge/npm--download-254-lightgrey.svg)](https://www.npmjs.com/package/dbfeazy)
 
-*What if a database was as cheap as a variable? *
+*What if a database was as cheap as a variable?*
 
 DBFeazy allows you to have a single, simple and small DB.
 
