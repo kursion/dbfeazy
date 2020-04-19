@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "start": "node ./example/index.js",
-    "test": "coffee src/test.coffee --nodejs"
+    "test": "./node_modules/.bin/coffee src/test.coffee --nodejs"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/kursion/dbfeazy#readme",
   "devDependencies": {
+    "coffeescript": "^2.5.1",
     "eslint": "^6.8.0"
   }
 }

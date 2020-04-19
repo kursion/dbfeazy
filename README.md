@@ -12,6 +12,10 @@ DBFeazy allows you to have a single, simple and small DB.
 
 Installation: `npm install dbfeazy`
 
+# Example
+
+`npm start`
+
 Here is a small example of how to open, restore, add,
 get and save the new database state.
 
