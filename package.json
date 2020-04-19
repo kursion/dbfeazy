@@ -4,6 +4,7 @@
   "description": "A small and light object oriented database",
   "main": "build/index.js",
   "scripts": {
+    "start": "node ./example/index.js",
     "test": "coffee src/test.coffee --nodejs"
   },
   "repository": {
@@ -25,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/kursion/dbfeazy/issues"
   },
-  "homepage": "https://github.com/kursion/dbfeazy#readme"
+  "homepage": "https://github.com/kursion/dbfeazy#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0"
+  }
 }

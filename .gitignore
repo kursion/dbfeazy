@@ -1,3 +1,6 @@
+# DBFeazy objects files
+*.dbo
+
 # Logs
 logs
 *.log
