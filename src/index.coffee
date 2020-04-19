@@ -103,7 +103,9 @@ module.exports = class DBFeazy
   # operations file
   #
   opline_log: (opline) ->
-    fs.writeFile(@_fileDescriptorOP, opline, @_fileEncoding)
+    fs.writeFile(@_fileDescriptorOP, opline, @_fileEncoding, (err, result) ->
+      if err then console.error(err)
+    )
 
   ##
   # Split an opline to the following format: [op, key, value]
