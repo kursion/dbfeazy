@@ -22,7 +22,7 @@ get and save the new database state.
 ```javascript
 const DBFeazy = require("dbfeazy");
 
-const db = new DBFeazy("users"); // Opens user.dbf and user.op files
+const db = new DBFeazy("users"); // Opens user.dbf and user.dbo files
 db.Restore(); // Restores previous state
 
 // Adding some values
@@ -50,20 +50,17 @@ db.Get("olivier.age"); // 45
 
 /**
  * Save the DB
- * NOTE: until now every operations are stored in the
- * the operations file (check futher for more information)
- * and the memory.t@github.com:kursion/dbfeazy.gitu
+ * NOTE: until now every operations are stored in the the operations file (check
+ * futher for more information) and the memory.
  *
- * Since we finished to work on this database we can
- * store the current state of the database and clean
- * the operation file.
+ * Since we finished to work on this database we can store the current state of
+ * the database and clean the operation file.
  */
 db.Save();
 
 /**
- * Now the operations file (users.op) should be cleaned and
- * the database object should be stored into the database
- * file (users.dbf) as a stringified JSON.
+ * Now the operations file (users.dbo) should be cleaned and the database object
+ * should be stored into the database file (users.dbf) as a stringified JSON.
  */
 ```
 
